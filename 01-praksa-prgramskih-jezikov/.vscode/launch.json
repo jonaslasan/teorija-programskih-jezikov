@@ -1,0 +1,16 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "test_program",
+            "type": "ocaml.earlybird",
+            "request": "launch",
+            "stopOnEntry": true,
+            "console": "integratedTerminal",
+            "program": "${workspaceFolder}/microml.bc",
+            "onlyDebugGlob": "<${workspaceFolder}/**/*>",
+            "yieldSteps": 1024,
+            "cwd": "${workspaceFolder}"
+        }
+    ]
+}

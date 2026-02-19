@@ -47,7 +47,9 @@ let ( || ) (parser1 : 'a parser) (parser2 : 'a parser) (chrs : char list) :
 *)
 let ( >>= ) (parser1 : 'a parser) (parser2 : 'a -> 'b parser) (chrs : char list)
     : 'b result =
-  failwith "Not implemented"
+    match parser1 chrs with
+    | None -> None
+    | Some (v, chrs') -> parser2 v chrs'
 
 (* Porabimo prvega in zavržemo, ter takoj nadaljujemo z drugim *)
 let ( >> ) (parser1 : 'a parser) (parser2 : 'b parser) : 'b parser =
@@ -56,12 +58,14 @@ let ( >> ) (parser1 : 'a parser) (parser2 : 'b parser) : 'b parser =
 (*
   Ustvari nov razčlenjevalnik, ki razčleni če podan pogoj velja za dobljeno vrednost.
 *)
-let satisfy (cond : 'a -> bool) (parser : 'a parser) : 'a parser =
-  failwith "Not implemented"
+let satisfy (cond : 'a -> bool) (parser : 'a parser) chrs =
+  match parser chrs with
+  | None -> None
+  | Some (v, chrs') -> if cond v then Some (v, chrs') else None
 
 (* Razčleni eno števko *)
-let digit : char parser = failwith "Not implemented"
-let alpha : char parser = failwith "Not implemented"
+let digit : char parser = satisfy (fun x -> String.contains "0123456789" x) single_character
+let alpha : char parser = satisfy (fun x -> String.contains "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ" x) single_character
 
 let space : char parser =
   let is_space = String.contains " \n\t\r" in
@@ -83,14 +87,15 @@ and many1 (parser : 'a parser) : 'a list parser =
   many parser >>= fun vs -> return (v :: vs)
 
 (* Razčleni celo število *)
-let integer : int parser = failwith "Not implemented"
+let integer : int parser = many1 digits >>= (fun v -> return (int_of_string (implode v)))
 let spaces : unit parser = many space >> return ()
 let spaces1 : unit parser = many1 space >> return ()
 
 (*
  razčleni izraze oblike `(izraz)` - kjer so lahko okoli oklepajev presledki
 *)
-let parens (parser : 'a parser) : 'a parser = failwith "Not implemented"
+let parens (parser : 'a parser) : 'a parser = 
+  word "(" >> spaces >> parser >>= fun r -> spaces >> word ")" >> return r
 
 (*
   Razčleni izraze oblike `izraz1 op izraz2` - kjer so lahko okoli operatorja presledki, in uporabi funkcijo `f` za združitev dobljenih vrednosti.
